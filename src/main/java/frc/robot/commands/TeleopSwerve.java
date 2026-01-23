@@ -75,7 +75,7 @@ public class TeleopSwerve extends Command {
 
     falconDrive = new SwerveRequest.FieldCentric()
     .withDeadband(MAX_SPEED*0.07)
-    .withRotationalDeadband(MAX_ANGULAR_RATE*0.07);
+    .withRotationalDeadband(0);
 
     swerveCommandEntry= tab.add("Swerve Command Status", swerveCommandType).getEntry();
     tab.addDouble("Controller Pointing Angle", ()-> -(Math.atan2(controller.getRightX(), -controller.getRightY())/ (2*Math.PI) * 360));

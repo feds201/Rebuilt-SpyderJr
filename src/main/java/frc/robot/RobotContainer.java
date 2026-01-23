@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.InitiateHubOrbit;
+import frc.robot.commands.OrbitHub;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -56,7 +58,7 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-       
+       joystick.rightBumper().whileTrue(new InitiateHubOrbit(drivetrain).andThen(new OrbitHub(drivetrain, Meters.of(3), MetersPerSecond.of(1))));
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
         joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
@@ -65,8 +67,8 @@ public class RobotContainer {
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-
+        joystick.leftBumper().whileTrue(new InitiateHubOrbit(drivetrain).andThen(new OrbitHub(drivetrain, Meters.of(3), MetersPerSecond.of(-1))));
+        
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
