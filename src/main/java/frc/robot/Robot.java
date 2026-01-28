@@ -9,6 +9,7 @@ import com.ctre.phoenix6.HootAutoReplay;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.utils.FuelSim;
 
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
@@ -22,6 +23,7 @@ public class Robot extends TimedRobot {
 
     public Robot() {
         m_robotContainer = new RobotContainer();
+        
     }
 
     @Override
@@ -56,6 +58,10 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
+        if(Robot.isSimulation()) {
+            m_robotContainer.setUpFuelSim();
+        }
+        
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }
@@ -79,5 +85,8 @@ public class Robot extends TimedRobot {
     public void testExit() {}
 
     @Override
-    public void simulationPeriodic() {}
+    public void simulationPeriodic() {
+            FuelSim.getInstance().updateSim();
+
+    }
 }

@@ -10,11 +10,16 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.InitiateHubOrbit;
@@ -22,6 +27,7 @@ import frc.robot.commands.OrbitHub;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.utils.FuelSim;
 
 public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
@@ -65,6 +71,7 @@ public class RobotContainer {
         joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
         joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        joystick.povDown().onTrue(new InstantCommand(() -> FuelSim.getInstance().spawnFuel(new Translation3d(1, 1, 1), new Translation3d(0, 0, 0))));
 
         // Reset the field-centric heading on left bumper press.
         joystick.leftBumper().whileTrue(new InitiateHubOrbit(drivetrain).andThen(new OrbitHub(drivetrain, Meters.of(3), MetersPerSecond.of(-1))));
@@ -74,6 +81,29 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
     return autoChooser.getSelected();
+  }
+
+  public void setUpFuelSim()
+  {
+ Shuffleboard.getTab("FuelSim").add(" pose", drivetrain.getState().Pose.getX());
+    double width=30/36;//inches
+    double length=30/36;//inches
+    double bumperHeight=7/36;//inches
+FuelSim.getInstance().spawnStartingFuel(); // spawns fuel in the depots and neutral zone
+
+// Register a robot for collision with fuel
+FuelSim.getInstance().registerRobot(
+        width, // from left to right
+        length, // from front to back
+        bumperHeight,
+        drivetrain::getRobotPose, // Supplier<Pose2d> of robot pose,
+        drivetrain::getChassisSpeeds
+        );// from floor to top of bumpers
+ // Supplier<ChassisSpeeds> of field-centric chassis speeds
+
+// Register an intake to remove fuel from the field as a rectangular bounding box
+
+FuelSim.getInstance().start(); // enables the simulation to run (updateSim must still be called periodically)
   }
 
 }
