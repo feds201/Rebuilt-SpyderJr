@@ -6,6 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -17,6 +18,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -64,18 +66,24 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-       joystick.rightBumper().whileTrue(new InitiateHubOrbit(drivetrain).andThen(new OrbitHub(drivetrain, Meters.of(3), MetersPerSecond.of(1))));
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+       //joystick.rightBumper().whileTrue(new InitiateHubOrbit(drivetrain).andThen(new OrbitHub(drivetrain, Meters.of(3), MetersPerSecond.of(1))));
+        /* Manually start logging with left bumper before running any tests,
+         * and stop logging with right bumper after we're done with ALL tests.
+         * This isn't necessary but is convenient to reduce the size of the hoot file */
+        // joystick.leftBumper().onTrue(Commands.runOnce(SignalLogger::start));
+        // joystick.rightBumper().onTrue(Commands.runOnce(SignalLogger::stop));
+        // // Run SysId routines when holding back/start and X/Y.
+        // // Note that each routine should be run exactly once in a single log.
+        // joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        // joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        // joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        // joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
         joystick.povDown().onTrue(new InstantCommand(() -> FuelSim.getInstance().spawnFuel(new Translation3d(1, 1, 1), new Translation3d(0, 0, 0))));
 
         // Reset the field-centric heading on left bumper press.
-        joystick.leftBumper().whileTrue(new InitiateHubOrbit(drivetrain).andThen(new OrbitHub(drivetrain, Meters.of(3), MetersPerSecond.of(-1))));
+        //joystick.leftBumper().whileTrue(new InitiateHubOrbit(drivetrain).andThen(new OrbitHub(drivetrain, Meters.of(3), MetersPerSecond.of(-1))));
         
+        joystick.start().onTrue(new InstantCommand(drivetrain::seedFieldCentric));
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
@@ -101,8 +109,7 @@ FuelSim.getInstance().registerRobot(
         );// from floor to top of bumpers
  // Supplier<ChassisSpeeds> of field-centric chassis speeds
 
-// Register an intake to remove fuel from the field as a rectangular bounding box
-
+FuelSim.getInstance().setSubticks(5);
 FuelSim.getInstance().start(); // enables the simulation to run (updateSim must still be called periodically)
   }
 

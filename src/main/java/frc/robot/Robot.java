@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
+import com.ctre.phoenix6.SignalLogger;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,7 +24,11 @@ public class Robot extends TimedRobot {
 
     public Robot() {
         m_robotContainer = new RobotContainer();
-        
+        if(Robot.isSimulation()) {
+            m_robotContainer.setUpFuelSim();
+        }
+
+       SignalLogger.setPath("/media/sda1/CTRElogs/");
     }
 
     @Override
@@ -58,9 +63,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        if(Robot.isSimulation()) {
-            m_robotContainer.setUpFuelSim();
-        }
         
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
