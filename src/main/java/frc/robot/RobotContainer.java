@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -30,6 +32,10 @@ import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.utils.FuelSim;
+import frc.robot.utils.LimelightWrapper;
+import limelight.networktables.AngularVelocity3d;
+import limelight.networktables.LimelightPoseEstimator.EstimationMode;
+import limelight.networktables.Orientation3d;
 
 public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
@@ -37,6 +43,7 @@ public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
     private final Telemetry logger = new Telemetry(MaxSpeed);
+    private final LimelightWrapper sampleLocalizationLimelight = new LimelightWrapper("limelight");
 
     private final CommandXboxController joystick = new CommandXboxController(0);
 
@@ -53,6 +60,24 @@ public class RobotContainer {
         
         configureBindings();
     }
+
+      public void updateLocalization() {
+    sampleLocalizationLimelight.getSettings()
+        .withRobotOrientation(new Orientation3d(drivetrain.getRotation3d(),
+            new AngularVelocity3d(DegreesPerSecond.of(drivetrain.getPigeon2().getAngularVelocityXWorld().getValueAsDouble()),
+                DegreesPerSecond.of(drivetrain.getPigeon2().getAngularVelocityYWorld().getValueAsDouble()),
+                DegreesPerSecond.of(drivetrain.getPigeon2().getAngularVelocityZWorld().getValueAsDouble()))))
+        .save();
+
+    // Get MegaTag2 pose
+    Optional<limelight.networktables.PoseEstimate> visionEstimate = sampleLocalizationLimelight.createPoseEstimator(EstimationMode.MEGATAG2).getPoseEstimate();
+    // If the pose is present
+    visionEstimate.ifPresent((limelight.networktables.PoseEstimate poseEstimate) -> {
+      // Add it to the pose estimator.
+      drivetrain.addVisionMeasurement(poseEstimate.pose.toPose2d(), poseEstimate.timestampSeconds);
+    });
+
+  }
 
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
