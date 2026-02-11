@@ -34,8 +34,11 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.utils.FuelSim;
 import frc.robot.utils.LimelightWrapper;
 import limelight.networktables.AngularVelocity3d;
+import limelight.networktables.LimelightPoseEstimator;
+import limelight.networktables.LimelightPoseEstimator.BotPose;
 import limelight.networktables.LimelightPoseEstimator.EstimationMode;
 import limelight.networktables.Orientation3d;
+import limelight.networktables.PoseEstimate;
 
 public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
@@ -43,7 +46,7 @@ public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
     private final Telemetry logger = new Telemetry(MaxSpeed);
-    private final LimelightWrapper sampleLocalizationLimelight = new LimelightWrapper("limelight");
+    private final LimelightWrapper sampleLocalizationLimelight = new LimelightWrapper("limelight-two");
 
     private final CommandXboxController joystick = new CommandXboxController(0);
 
@@ -70,11 +73,11 @@ public class RobotContainer {
         .save();
 
     // Get MegaTag2 pose
-    Optional<limelight.networktables.PoseEstimate> visionEstimate = sampleLocalizationLimelight.createPoseEstimator(EstimationMode.MEGATAG2).getPoseEstimate();
+    Optional<PoseEstimate>  poseEstimate = BotPose.BLUE_MEGATAG2.get(sampleLocalizationLimelight);
     // If the pose is present
-    visionEstimate.ifPresent((limelight.networktables.PoseEstimate poseEstimate) -> {
+    poseEstimate.ifPresent((limelight.networktables.PoseEstimate est) -> {
       // Add it to the pose estimator.
-      drivetrain.addVisionMeasurement(poseEstimate.pose.toPose2d(), poseEstimate.timestampSeconds);
+      drivetrain.addVisionMeasurement(est.pose.toPose2d(), est.timestampSeconds);
     });
 
   }
