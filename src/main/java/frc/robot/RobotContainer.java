@@ -77,6 +77,7 @@ public class RobotContainer {
     // If the pose is present
     poseEstimate.ifPresent((limelight.networktables.PoseEstimate est) -> {
       // Add it to the pose estimator.
+      SmartDashboard.putNumberArray("megatag2 pose", new double[]{est.pose.toPose2d().getTranslation().getX(), est.pose.toPose2d().getTranslation().getY(), est.pose.toPose2d().getTranslation().getAngle().getDegrees()});
       drivetrain.addVisionMeasurement(est.pose.toPose2d(), est.timestampSeconds);
     });
 
