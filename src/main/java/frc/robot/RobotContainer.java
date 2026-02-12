@@ -8,35 +8,26 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.Optional;
 
-import com.ctre.phoenix6.SignalLogger;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.InitiateHubOrbit;
-import frc.robot.commands.OrbitHub;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.utils.FuelSim;
 import frc.robot.utils.LimelightWrapper;
 import limelight.networktables.AngularVelocity3d;
-import limelight.networktables.LimelightPoseEstimator;
 import limelight.networktables.LimelightPoseEstimator.BotPose;
-import limelight.networktables.LimelightPoseEstimator.EstimationMode;
+import limelight.networktables.LimelightSettings.ImuMode;
 import limelight.networktables.Orientation3d;
 import limelight.networktables.PoseEstimate;
 
@@ -47,14 +38,13 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
     private final Telemetry logger = new Telemetry(MaxSpeed);
     private final LimelightWrapper sampleLocalizationLimelight = new LimelightWrapper("limelight-two");
-
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser();
-
+        sampleLocalizationLimelight.getSettings().withImuMode(ImuMode.ExternalImu);
     // Another option that allows you to specify the default auto by its name
     // autoChooser = AutoBuilder.buildAutoChooser("My Default Auto");
 
@@ -66,7 +56,7 @@ public class RobotContainer {
 
       public void updateLocalization() {
     sampleLocalizationLimelight.getSettings()
-        .withRobotOrientation(new Orientation3d(drivetrain.getRotation3d(),
+        .withRobotOrientation(new Orientation3d(new Rotation3d(drivetrain.getState().Pose.getRotation()),
             new AngularVelocity3d(DegreesPerSecond.of(drivetrain.getPigeon2().getAngularVelocityXWorld().getValueAsDouble()),
                 DegreesPerSecond.of(drivetrain.getPigeon2().getAngularVelocityYWorld().getValueAsDouble()),
                 DegreesPerSecond.of(drivetrain.getPigeon2().getAngularVelocityZWorld().getValueAsDouble()))))
@@ -76,25 +66,31 @@ public class RobotContainer {
     Optional<PoseEstimate>  poseEstimate = BotPose.BLUE_MEGATAG2.get(sampleLocalizationLimelight);
     // If the pose is present
     poseEstimate.ifPresent((limelight.networktables.PoseEstimate est) -> {
-      // Add it to the pose estimator.
-      SmartDashboard.putNumberArray("megatag2 pose", new double[]{est.pose.toPose2d().getTranslation().getX(), est.pose.toPose2d().getTranslation().getY(), est.pose.toPose2d().getTranslation().getAngle().getDegrees()});
-      drivetrain.addVisionMeasurement(est.pose.toPose2d(), est.timestampSeconds);
+   
+      if(est.tagCount > 0){
+           // Add it to the pose estimator.
+        drivetrain.addVisionMeasurement(est.pose.toPose2d(), est.timestampSeconds);
+      }
+     
     });
 
   }
 
     private void configureBindings() {
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(new TeleopSwerve(drivetrain, joystick));
 
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
+        joystick.start().onTrue(new InstantCommand(drivetrain::seedFieldCentric));
+
+
+        drivetrain.registerTelemetry(logger::telemeterize);
+
+
+        
        //joystick.rightBumper().whileTrue(new InitiateHubOrbit(drivetrain).andThen(new OrbitHub(drivetrain, Meters.of(3), MetersPerSecond.of(1))));
         /* Manually start logging with left bumper before running any tests,
          * and stop logging with right bumper after we're done with ALL tests.
@@ -112,8 +108,7 @@ public class RobotContainer {
         // Reset the field-centric heading on left bumper press.
         //joystick.leftBumper().whileTrue(new InitiateHubOrbit(drivetrain).andThen(new OrbitHub(drivetrain, Meters.of(3), MetersPerSecond.of(-1))));
         
-        joystick.start().onTrue(new InstantCommand(drivetrain::seedFieldCentric));
-        drivetrain.registerTelemetry(logger::telemeterize);
+       
     }
 
     public Command getAutonomousCommand() {

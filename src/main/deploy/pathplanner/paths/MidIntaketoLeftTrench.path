@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.558526490066224,
-        "y": 8.463559602649006
+        "x": 7.81811387900356,
+        "y": 8.096595492289442
       },
       "isLocked": false,
       "linkedName": "MidIntake"
@@ -20,8 +20,8 @@
         "y": 7.425389072847682
       },
       "prevControl": {
-        "x": 6.883352649006622,
-        "y": 7.018832781456954
+        "x": 6.742194543297748,
+        "y": 7.300415183867142
       },
       "nextControl": null,
       "isLocked": false,
@@ -38,11 +38,11 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.0,
-    "maxAcceleration": 2.0,
+    "maxVelocity": 2.5,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
-    "nominalVoltage": 12.0,
+    "nominalVoltage": 11.8,
     "unlimited": false
   },
   "goalEndState": {
@@ -53,7 +53,7 @@
   "folder": "New Folder",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": 90.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }
