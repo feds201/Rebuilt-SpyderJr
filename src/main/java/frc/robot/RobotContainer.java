@@ -6,12 +6,9 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.Optional;
-
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -25,27 +22,22 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.utils.FuelSim;
 import frc.robot.utils.LimelightWrapper;
-import limelight.networktables.AngularVelocity3d;
-import limelight.networktables.LimelightPoseEstimator.BotPose;
 import limelight.networktables.LimelightSettings.ImuMode;
-import limelight.networktables.Orientation3d;
-import limelight.networktables.PoseEstimate;
 
 public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
 
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
     private final Telemetry logger = new Telemetry(MaxSpeed);
-    private final LimelightWrapper ll4 = new LimelightWrapper("limelight-two");
-  private final LimelightWrapper ll3 = new LimelightWrapper("limelight-five");
-private final CommandXboxController joystick = new CommandXboxController(0);
+    private final LimelightWrapper ll4 = new LimelightWrapper("limelight-two", true);
+    private final LimelightWrapper ll3 = new LimelightWrapper("limelight-five", false);
+    private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser();
-        ll4.getSettings().withImuMode(ImuMode.ExternalImu);
+        ll4.getSettings().withImuMode(ImuMode.ExternalImu).save();
     // Another option that allows you to specify the default auto by its name
     // autoChooser = AutoBuilder.buildAutoChooser("My Default Auto");
 
@@ -56,8 +48,8 @@ private final CommandXboxController joystick = new CommandXboxController(0);
     }
 
       public void updateLocalization() {
-           LimelightWrapper.updateLocalizationLimelight(ll3, false, drivetrain);
-          LimelightWrapper.updateLocalizationLimelight(ll4, true, drivetrain);
+           ll3.updateLocalizationLimelight(drivetrain);
+          ll4.updateLocalizationLimelight(drivetrain);
   }
 
     private void configureBindings() {
