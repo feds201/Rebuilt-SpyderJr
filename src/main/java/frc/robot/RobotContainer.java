@@ -37,14 +37,15 @@ public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
     private final Telemetry logger = new Telemetry(MaxSpeed);
-    private final LimelightWrapper sampleLocalizationLimelight = new LimelightWrapper("limelight-two");
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    private final LimelightWrapper ll4 = new LimelightWrapper("limelight-two");
+  private final LimelightWrapper ll3 = new LimelightWrapper("limelight-five");
+private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser();
-        sampleLocalizationLimelight.getSettings().withImuMode(ImuMode.ExternalImu);
+        ll4.getSettings().withImuMode(ImuMode.ExternalImu);
     // Another option that allows you to specify the default auto by its name
     // autoChooser = AutoBuilder.buildAutoChooser("My Default Auto");
 
@@ -55,25 +56,8 @@ public class RobotContainer {
     }
 
       public void updateLocalization() {
-    sampleLocalizationLimelight.getSettings()
-        .withRobotOrientation(new Orientation3d(new Rotation3d(drivetrain.getState().Pose.getRotation()),
-            new AngularVelocity3d(DegreesPerSecond.of(drivetrain.getPigeon2().getAngularVelocityXWorld().getValueAsDouble()),
-                DegreesPerSecond.of(drivetrain.getPigeon2().getAngularVelocityYWorld().getValueAsDouble()),
-                DegreesPerSecond.of(drivetrain.getPigeon2().getAngularVelocityZWorld().getValueAsDouble()))))
-        .save();
-
-    // Get MegaTag2 pose
-    Optional<PoseEstimate>  poseEstimate = BotPose.BLUE_MEGATAG2.get(sampleLocalizationLimelight);
-    // If the pose is present
-    poseEstimate.ifPresent((limelight.networktables.PoseEstimate est) -> {
-   
-      if(est.tagCount > 0){
-           // Add it to the pose estimator.
-        drivetrain.addVisionMeasurement(est.pose.toPose2d(), est.timestampSeconds);
-      }
-     
-    });
-
+           LimelightWrapper.updateLocalizationLimelight(ll3, false, drivetrain);
+          LimelightWrapper.updateLocalizationLimelight(ll4, true, drivetrain);
   }
 
     private void configureBindings() {
