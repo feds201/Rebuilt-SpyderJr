@@ -16,19 +16,33 @@ import frc.robot.RobotMap.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import limelight.Limelight;
 import limelight.networktables.AngularVelocity3d;
-import limelight.networktables.LimelightPoseEstimator.BotPose;
 import limelight.networktables.Orientation3d;
+import limelight.networktables.PoseEstimate;
 
 public class LimelightWrapper extends Limelight{
+    private double rioHb = 0;
+    private int totalTags = 0;
     private final boolean isLL4;
+    private final PoseEstimate estimateMt2;
+    private final PoseEstimate estimateMt1;
 
-    public LimelightWrapper(String limelightName, boolean isLL4){
+    public LimelightWrapper(String limelightName, boolean isLL4) {
         super(limelightName);
         this.isLL4 = isLL4;
-        SubsystemStatusManager.addSubsystem(limelightName, ()-> this.getNTTable().getTopic("tv").exists());
-        DeviceTempReporter.addDevice(limelightName, ()-> Celsius.of(this.getNTTable().getEntry("hw").getDoubleArray(new double[4])[3]));
+        estimateMt2 = new PoseEstimate(this, "botpose_orb_wpiblue", true);
+        estimateMt1 = new PoseEstimate(this, "botpose_wpiblue", false);
+
+        SubsystemStatusManager.addSubsystem(limelightName, ()-> getNTTable().getTopic("tv").exists());
+        DeviceTempReporter.addDevice(limelightName, ()-> Celsius.of(getNTTable().getEntry("hw").getDoubleArray(new double[4])[3]));
     }
 
+    /**
+     * Resets the variables used for average tag count logging.
+     */
+    public void resetTagCounting(){
+        totalTags = 0;
+        rioHb = 0;
+    }
   /**
    * Retrieve estimated standard deviations for a Megatag 1 estimate
    * @param poseEstimate the pose estimate from the limelight
@@ -58,7 +72,7 @@ public class LimelightWrapper extends Limelight{
 
     // Decrease std devs if limelight is LL4
     if (isLL4){
-        estStdDevs = estStdDevs.times(.8);
+        estStdDevs = estStdDevs.times(.1);
     }
 
     // If the average ambiguity is too high, return very high std devs to ignore the pose
@@ -126,7 +140,8 @@ public class LimelightWrapper extends Limelight{
  * @param drivetrain Robot drivetrain
  */
 public void updateLocalizationLimelight(CommandSwerveDrivetrain drivetrain){
-    this.getSettings()
+    
+    getSettings()
         .withRobotOrientation(new Orientation3d(new Rotation3d(drivetrain.getState().Pose.getRotation()),
             new AngularVelocity3d(RadiansPerSecond.of(drivetrain.getState().Speeds.omegaRadiansPerSecond),
                 RadiansPerSecond.of(0),
@@ -134,28 +149,36 @@ public void updateLocalizationLimelight(CommandSwerveDrivetrain drivetrain){
         .save();
 
     // Get MegaTag2 pose
-    Optional<limelight.networktables.PoseEstimate> visionEstimateMt2 = BotPose.BLUE_MEGATAG2.get(this);
-    // If the pose is present
-    SmartDashboard.putNumberArray(limelightName + " Pose estimate mt2", visionEstimateMt2.get().pose.toMatrix().getData());
     
+    Optional<PoseEstimate> visionEstimateMt2 = Optional.of(estimateMt2).get().getPoseEstimate();
+
+    //Publish average tag count
+    totalTags += visionEstimateMt2.get().tagCount;
+    rioHb ++;
+    SmartDashboard.putNumber(limelightName + " Average tag", totalTags / rioHb);
+
+    // If the pose is present
     visionEstimateMt2.ifPresent((limelight.networktables.PoseEstimate poseEstimate) -> {
         // And we see >0 tags and robot rotates <2 rotations per second
         if(poseEstimate.tagCount > 0 &&  Math.abs(Units.radiansToRotations(drivetrain.getState().Speeds.omegaRadiansPerSecond)) < 2){
             // Add it to the pose estimator.
-            drivetrain.addVisionMeasurement(poseEstimate.pose.toPose2d(), poseEstimate.timestampSeconds, this.getEstimationStdDevsLimelightMT2(poseEstimate));
+            drivetrain.addVisionMeasurement(poseEstimate.pose.toPose2d(), poseEstimate.timestampSeconds, getEstimationStdDevsLimelightMT2(poseEstimate));
         }
     });
 
+    //Only if is limelight 4, add MT1 yaw measurement to the estimator
+    if(isLL4){
+    Optional<PoseEstimate> visionEstimateMt1 = Optional.of(estimateMt1).get().getPoseEstimate();
     
-    Optional<limelight.networktables.PoseEstimate> visionEstimateMt1 = BotPose.BLUE.get(this);
-
+    //If the pose is present
     visionEstimateMt1.ifPresent((limelight.networktables.PoseEstimate poseEstimate) -> {
         // And we see >1 tags and robot rotates <2 rotations per second
         if(poseEstimate.tagCount > 1 &&  Math.abs(Units.radiansToRotations(drivetrain.getState().Speeds.omegaRadiansPerSecond)) < 2){
             // Add it to the pose estimator.
-            drivetrain.addVisionMeasurement(poseEstimate.pose.toPose2d(), poseEstimate.timestampSeconds, this.getEstimationStdDevsLimelightMT1(poseEstimate));
+            drivetrain.addVisionMeasurement(poseEstimate.pose.toPose2d(), poseEstimate.timestampSeconds, getEstimationStdDevsLimelightMT1(poseEstimate));
         }
     });
+}
 }
 
     

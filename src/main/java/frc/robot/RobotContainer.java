@@ -26,7 +26,7 @@ import limelight.networktables.LimelightSettings.ImuMode;
 
 public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
-
+    private final SwerveRequest.RobotCentric back = new SwerveRequest.RobotCentric().withVelocityX(-.5);
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private final Telemetry logger = new Telemetry(MaxSpeed);
     private final LimelightWrapper ll4 = new LimelightWrapper("limelight-two", true);
@@ -47,12 +47,13 @@ public class RobotContainer {
         configureBindings();
     }
 
-      public void updateLocalizationLL3() {
+    public void updateLocalizationLL3() {
           ll3.updateLocalizationLimelight(drivetrain);
-  }
-      public void updateLocalizationLL4() {
+    }
+
+    public void updateLocalizationLL4() {
           ll4.updateLocalizationLimelight(drivetrain);
-  }
+    }
 
     private void configureBindings() {
         drivetrain.setDefaultCommand(new TeleopSwerve(drivetrain, joystick));
@@ -61,6 +62,8 @@ public class RobotContainer {
         RobotModeTriggers.disabled().whileTrue(
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
+
+        joystick.b().onTrue(new InstantCommand(ll3::resetTagCounting).alongWith(new InstantCommand(ll4::resetTagCounting)));
 
         joystick.start().onTrue(new InstantCommand(drivetrain::seedFieldCentric));
 

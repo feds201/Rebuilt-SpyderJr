@@ -38,11 +38,10 @@ public final class RobotMap {
     }
 
     public static class VisionConstants{
-        public static final Matrix<N3,N1> STDDEV_ZERO = VecBuilder.fill(0,0,0);
         //Use only yaw from MT1
         public static final Matrix<N3, N1> MT1_STDDEV = VecBuilder.fill(1e6, 1e6, Math.PI/60);
         //Use only x/y from MT2
-        public static final Matrix<N3, N1> MT2_STDDEV = VecBuilder.fill(0.05, 0.05, 1e6);
+        public static final Matrix<N3, N1> MT2_STDDEV = VecBuilder.fill(0.5, 0.5, 1e6);
 
     }
 }
