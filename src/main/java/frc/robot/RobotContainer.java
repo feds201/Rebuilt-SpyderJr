@@ -47,8 +47,10 @@ public class RobotContainer {
         configureBindings();
     }
 
-      public void updateLocalization() {
-           ll3.updateLocalizationLimelight(drivetrain);
+      public void updateLocalizationLL3() {
+          ll3.updateLocalizationLimelight(drivetrain);
+  }
+      public void updateLocalizationLL4() {
           ll4.updateLocalizationLimelight(drivetrain);
   }
 

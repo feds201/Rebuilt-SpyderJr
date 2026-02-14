@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotMap.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import limelight.Limelight;
@@ -75,6 +76,7 @@ public class LimelightWrapper extends Limelight{
       estStdDevs = estStdDevs.times(1 + (avgDist * avgDist/30));
     }
 
+    SmartDashboard.putNumberArray(limelightName + " mt1 stddev", estStdDevs.getData());
     return estStdDevs;
   }
 
@@ -115,7 +117,7 @@ public class LimelightWrapper extends Limelight{
     } else {
         estStdDevs = estStdDevs.times(1 + (avgDist * avgDist * .2));
     }
-
+    SmartDashboard.putNumberArray(limelightName + " mt2 stddev", estStdDevs.getData());
     return estStdDevs;
 }
 
@@ -133,8 +135,9 @@ public void updateLocalizationLimelight(CommandSwerveDrivetrain drivetrain){
 
     // Get MegaTag2 pose
     Optional<limelight.networktables.PoseEstimate> visionEstimateMt2 = BotPose.BLUE_MEGATAG2.get(this);
-    System.out.println(this.limelightName + " " + visionEstimateMt2.toString());
     // If the pose is present
+    SmartDashboard.putNumberArray(limelightName + " Pose estimate mt2", visionEstimateMt2.get().pose.toMatrix().getData());
+    
     visionEstimateMt2.ifPresent((limelight.networktables.PoseEstimate poseEstimate) -> {
         // And we see >0 tags and robot rotates <2 rotations per second
         if(poseEstimate.tagCount > 0 &&  Math.abs(Units.radiansToRotations(drivetrain.getState().Speeds.omegaRadiansPerSecond)) < 2){
