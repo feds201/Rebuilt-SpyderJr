@@ -8,50 +8,48 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.81811387900356,
-        "y": 8.096595492289442
+        "x": 7.172562277580072,
+        "y": 6.170699881376038
       },
       "isLocked": false,
       "linkedName": "MidIntake"
     },
     {
       "anchor": {
-        "x": 3.2533857615894046,
-        "y": 7.425389072847682
+        "x": 2.8904033214709375,
+        "y": 5.299205219454329
       },
       "prevControl": {
-        "x": 6.742194543297748,
-        "y": 7.300415183867142
+        "x": 2.7136266261743005,
+        "y": 5.122428524157693
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
-  "constraintZones": [],
-  "pointTowardsZones": [
+  "rotationTargets": [
     {
-      "fieldPosition": {
-        "x": 5.3,
-        "y": 4.5
-      },
-      "rotationOffset": 180.0,
-      "minWaypointRelativePos": 0.10145808019441206,
-      "maxWaypointRelativePos": 0.3967193195625702,
-      "name": "Point Towards Zone"
-    },
-    {
-      "fieldPosition": {
-        "x": 4.63,
-        "y": 7.4
-      },
-      "rotationOffset": 180.0,
-      "minWaypointRelativePos": 0.25,
-      "maxWaypointRelativePos": 0.75,
-      "name": "Point Towards Zone"
+      "waypointRelativePos": 0.3938461538461491,
+      "rotationDegrees": 135.0
     }
   ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.3480714957666952,
+      "maxWaypointRelativePos": 0.7055503292568167,
+      "constraints": {
+        "maxVelocity": 2.0,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 360.0,
+        "nominalVoltage": 11.8,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 5.0,
@@ -63,7 +61,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 135.0
   },
   "reversed": false,
   "folder": "New Folder",
