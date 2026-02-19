@@ -47,12 +47,13 @@ public class RobotContainer {
         configureBindings();
     }
 
-    public void updateLocalizationLL3() {
-          ll3.updateLocalizationLimelight(drivetrain);
-    }
-
-    public void updateLocalizationLL4() {
-          ll4.updateLocalizationLimelight(drivetrain);
+    public void updateLocalization() {
+        if(ll4.getNTTable().containsKey("tv")){
+            ll4.updateLocalizationLimelight(drivetrain);
+        }else
+        {
+            ll3.updateLocalizationLimelight(drivetrain);
+        }
     }
 
     private void configureBindings() {
