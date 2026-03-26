@@ -44,4 +44,11 @@ public final class RobotMap {
         public static final Matrix<N3, N1> MT2_STDDEV = VecBuilder.fill(0.5, 0.5, 1e6);
 
     }
+
+     public static final class IntakeSubsystemConstants {
+        public static final int kMotorID = 1;
+        public static final int kLimit_switch_rID = 2;
+        public static final int kLimit_switch_lID = 3; 
+
+    }
 }

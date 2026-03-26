@@ -20,24 +20,24 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.intake.DriveToBall;
 import frc.robot.utils.FuelSim;
-import frc.robot.utils.LimelightWrapper;
-import limelight.networktables.LimelightSettings.ImuMode;
 
 public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
     private final SwerveRequest.RobotCentric back = new SwerveRequest.RobotCentric().withVelocityX(-.5);
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private final Telemetry logger = new Telemetry(MaxSpeed);
-    private final LimelightWrapper ll4 = new LimelightWrapper("limelight-two", true);
-    private final LimelightWrapper ll3 = new LimelightWrapper("limelight-five", false);
+    private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     public RobotContainer() {
+  
         autoChooser = AutoBuilder.buildAutoChooser();
-        ll4.getSettings().withImuMode(ImuMode.ExternalImu).save();
+ 
     // Another option that allows you to specify the default auto by its name
     // autoChooser = AutoBuilder.buildAutoChooser("My Default Auto");
 
@@ -45,15 +45,6 @@ public class RobotContainer {
 
         
         configureBindings();
-    }
-
-    public void updateLocalization() {
-        if(ll4.getNTTable().containsKey("tv")){
-            ll4.updateLocalizationLimelight(drivetrain);
-        }else
-        {
-            ll3.updateLocalizationLimelight(drivetrain);
-        }
     }
 
     private void configureBindings() {
@@ -64,12 +55,10 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        joystick.b().onTrue(new InstantCommand(ll3::resetTagCounting).alongWith(new InstantCommand(ll4::resetTagCounting)));
-
         joystick.start().onTrue(new InstantCommand(drivetrain::seedFieldCentric));
-
-
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        joystick.a().whileTrue(new DriveToBall(drivetrain));
 
 
         
