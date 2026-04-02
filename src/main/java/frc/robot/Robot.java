@@ -40,6 +40,11 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("limelight TX", LimelightHelpers.getTX("limelight-one"));
         SmartDashboard.putNumber("limelight TY", LimelightHelpers.getTY("limelight-one"));
         SmartDashboard.putNumber("limelight TA", LimelightHelpers.getTA("limelight-one"));
+        SmartDashboard.putNumber("DriveToBall-X", (LimelightHelpers.getTX("limelight-one")/10));
+        SmartDashboard.putNumber("DriveToBall-Y", (LimelightHelpers.getTY("limelight-one")/10));
+        SmartDashboard.putBoolean("DriveToBall-Tv", LimelightHelpers.getTV("limelight-one"));
+        //SmartDashboard.putNumber("DriveToBall-Rotation", -hubRotPID.calculate(xError));
+
     }
 
     @Override

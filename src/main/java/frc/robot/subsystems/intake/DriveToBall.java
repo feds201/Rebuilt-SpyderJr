@@ -1,6 +1,7 @@
 package frc.robot.subsystems.intake;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.utils.LimelightHelpers;
@@ -14,6 +15,8 @@ public class DriveToBall extends Command {
     addRequirements(this.dt);
     
     driveNormal = new SwerveRequest.RobotCentric();
+
+
   }
 
   // Called when the command is initially scheduled.
@@ -23,29 +26,27 @@ public class DriveToBall extends Command {
   }
   @Override
   public void execute() {
+
     double xError = LimelightHelpers.getTX("limelight-one");
     double Tx = LimelightHelpers.getTX("limelight-one");
     double Ty = LimelightHelpers.getTY("limelight-one");
+    boolean Tv = LimelightHelpers.getTV("limelight-one");
 
-    // if (Tx > 0.0) {
-    //   Tx += 2;
-    // }
-    // else {
-    //   Tx -= 2;
-    // }
-
-    // if (Ty > 0.0) {
-    //   Ty += 2; 
-    // }
-    // else {
-    //   Ty -= 2;
-    // }
+    if (Tv == false) {
+        dt.setControl(driveNormal
+          .withVelocityX(1) //arbitrary value, will need to be tuned
+          .withVelocityY(0)
+          .withRotationalRate(0));
+      }
 
      dt.setControl(driveNormal
           .withVelocityX(Tx/10)
           .withVelocityY(Ty/10)
           .withRotationalRate(-hubRotPID.calculate(xError)));
+
   }
+
+ 
 
   // Called once the command ends or is interrupted.
   @Override
