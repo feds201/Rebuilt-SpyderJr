@@ -34,14 +34,14 @@ public class DriveToBall extends Command {
 
     if (Tv == false) {
         dt.setControl(driveNormal
-          .withVelocityX(1) //arbitrary value, will need to be tuned
-          .withVelocityY(0)
+          .withVelocityX(1) //arbitrary value, will need to be tunedd
+          .withVelocityY(1)
           .withRotationalRate(0));
       }
 
      dt.setControl(driveNormal
           .withVelocityX(Tx/10)
-          .withVelocityY(Ty/10)
+          .withVelocityY(Ty/5)
           .withRotationalRate(-hubRotPID.calculate(xError)));
 
   }
@@ -50,7 +50,13 @@ public class DriveToBall extends Command {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    double xError = LimelightHelpers.getTX("limelight-one");
+    dt.setControl(driveNormal
+          .withVelocityX(0)
+          .withVelocityY(0)
+          .withRotationalRate(-hubRotPID.calculate(xError)));
+  }
 
   // Returns true when the command should end.
   @Override
