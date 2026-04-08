@@ -4,26 +4,21 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.intake.IntakeSubsystem.IntakeState;
 import frc.robot.utils.LimelightHelpers;
 
 public class DriveToBall extends Command {
   private CommandSwerveDrivetrain dt;
-  private final PIDController hubRotPID = new PIDController(1, 0, 0);
+  private final PIDController hubRotPID = new PIDController(0.1, 0, 0);
   private SwerveRequest.RobotCentric driveNormal;
 
-   public enum DriveToBallState {
-    APPROACHING, 
-    ALIGNING
-  }
 
-
- DriveToBallState activeState = DriveToBallState.APPROACHING;
 
   public DriveToBall(CommandSwerveDrivetrain dt) {
     this.dt = dt;
     addRequirements(this.dt);
     driveNormal = new SwerveRequest.RobotCentric();
+
+    hubRotPID.setTolerance(1.0);
   }
 
  
@@ -34,33 +29,45 @@ public class DriveToBall extends Command {
     hubRotPID.setSetpoint(0.0);
   }
 
-  @Override
-  public void execute() {
-    double xError = LimelightHelpers.getTX("limelight-one");
-    double Tx = LimelightHelpers.getTX("limelight-one");
-    double Ty = LimelightHelpers.getTY("limelight-one");
-    double Ta = LimelightHelpers.getTA(("limelight-one"));
-    boolean Tv = LimelightHelpers.getTV("limelight-one");
 
-    // when Tx is left tx is positive, so it would be ); (-Tx/30)
-    
-     if (Tv == true) {
-       activeState = DriveToBallState.ALIGNING; 
-     
-       if (xError <= 30 && xError >= -30) {
-         dt.setControl(driveNormal
-         .withVelocityX(1.5)); 
-       }
+   @Override
+public void execute() {
+    boolean hasTarget = LimelightHelpers.getTV("limelight-one");
 
-       else {
+    if (hasTarget) {
+        double tx = LimelightHelpers.getTX("limelight-one");
+        double ty = LimelightHelpers.getTY("limelight-one");
+
+        if (Math.abs(tx) < 1.5) tx = 0.0;
+
+        double rotationOutput = -hubRotPID.calculate(tx);
+        rotationOutput = Math.max(-2.0, Math.min(2.0, rotationOutput));
+
+        
+        double forwardVelocity = Math.abs((ty - 20) * 0.10);
+
+        if (ty > -5) {
+           dt.setControl(driveNormal
+            .withVelocityX(forwardVelocity)
+            .withVelocityY(0)
+            .withRotationalRate(rotationOutput)
+        );
+
+        }
+
+       
+    } else {
         dt.setControl(driveNormal
-        .withVelocityY(Tx/30));
+            .withVelocityX(0)
+            .withVelocityY(0)
+            .withRotationalRate(3.2) //in radians per second
+        );
+    }
+}
 
-       }
-     }
 
 
-  }
+  
 
   // Called once the command ends or is interrupted.
   @Override
