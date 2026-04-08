@@ -1,5 +1,9 @@
 package frc.robot.subsystems.intake;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -10,6 +14,10 @@ public class DriveToBall extends Command {
   private CommandSwerveDrivetrain dt;
   private final PIDController hubRotPID = new PIDController(0.1, 0, 0);
   private SwerveRequest.RobotCentric driveNormal;
+  private double maxVelocity;
+  private ArrayList<Double> tyHistory = new ArrayList<Double>(List.of(0.0, 0.0, 0.0, 0.0, 0.0));
+  private double averageTy; 
+  private boolean hasTarget;
 
 
 
@@ -17,8 +25,8 @@ public class DriveToBall extends Command {
     this.dt = dt;
     addRequirements(this.dt);
     driveNormal = new SwerveRequest.RobotCentric();
-
     hubRotPID.setTolerance(1.0);
+    maxVelocity = 2; 
   }
 
  
@@ -32,7 +40,7 @@ public class DriveToBall extends Command {
 
    @Override
 public void execute() {
-    boolean hasTarget = LimelightHelpers.getTV("limelight-one");
+      hasTarget = LimelightHelpers.getTV("limelight-one");
 
     if (hasTarget) {
         double tx = LimelightHelpers.getTX("limelight-one");
@@ -44,7 +52,11 @@ public void execute() {
         rotationOutput = Math.max(-2.0, Math.min(2.0, rotationOutput));
 
         
-        double forwardVelocity = Math.abs((ty - 20) * 0.10);
+        double forwardVelocity = Math.abs((ty - 23) * 0.1);
+
+        if (forwardVelocity >= maxVelocity){
+          forwardVelocity = averageTy; 
+        }
 
         if (ty > -5) {
            dt.setControl(driveNormal
@@ -52,10 +64,8 @@ public void execute() {
             .withVelocityY(0)
             .withRotationalRate(rotationOutput)
         );
-
         }
 
-       
     } else {
         dt.setControl(driveNormal
             .withVelocityX(0)
@@ -63,8 +73,24 @@ public void execute() {
             .withRotationalRate(3.2) //in radians per second
         );
     }
-}
+  }
 
+public void AverageTy() {
+if (hasTarget) {
+   if (tyHistory.size() > 5) {
+         tyHistory.remove(0);
+    }
+
+    if (tyHistory.size() == 5) {
+
+      for (int i = 0; i < (tyHistory.size()); i++) {
+        averageTy += tyHistory.get(i);
+      }
+       averageTy /= tyHistory.size();
+        
+    } 
+}
+}
 
 
   
@@ -79,7 +105,9 @@ public void execute() {
   public boolean isFinished() {
     return false;
   }
+
 }
+
 
 
 //.withRotationalRate(-hubRotPID.calculate(xError)));
