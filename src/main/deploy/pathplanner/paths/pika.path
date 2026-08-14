@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.426272727272727,
+        "y": 4.983227272727272
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.4387985998088795,
+        "y": 4.677946417707346
+      },
+      "isLocked": false,
+      "linkedName": "pikachu"
+    },
+    {
+      "anchor": {
+        "x": 2.3229659090909087,
+        "y": 6.756
+      },
+      "prevControl": {
+        "x": 2.175783413791544,
+        "y": 6.537862914357576
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "fix"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 2.0,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 360.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": false
+}

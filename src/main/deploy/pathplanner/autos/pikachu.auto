@@ -1,0 +1,31 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "pikachu"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "pikau"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "pika"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
